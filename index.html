@@ -54,6 +54,10 @@
       background: var(--primary);
       color: white;
       cursor: pointer;
+      font-size: 30px;
+      padding: 30px 50px;
+      min-width: 250px;
+      margin: 20px;
     }
     button:hover {
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
@@ -93,13 +97,6 @@
     <button onclick="setMantra()">Set Mantra</button>
   </div>
 
-  <div class="filter-section">
-    <input type="text" id="searchInput" placeholder="Search mantras...">
-    <br>
-    <label>From: <input type="date" id="fromDate"></label>
-    <label>To: <input type="date" id="toDate"></label>
-  </div>
-
   <div id="currentMantra" style="font-size: 24px; margin: 10px 0;"></div>
   <div class="counter" id="countDisplay">0</div>
 
@@ -108,6 +105,13 @@
     <button onclick="resetCount()">Reset</button>
     <button onclick="viewHistory()">History</button>
     <button onclick="syncToCloud()">Sync</button>
+  </div>
+
+  <div class="filter-section">
+    <input type="text" id="searchInput" placeholder="Search mantras...">
+    <br>
+    <label>From: <input type="date" id="fromDate"></label>
+    <label>To: <input type="date" id="toDate"></label>
   </div>
 
   <div class="theme-toggle">
