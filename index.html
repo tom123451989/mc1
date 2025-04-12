@@ -90,10 +90,6 @@
       outline: none;
       box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.5);
     }
-    #chartContainer {
-      max-width: 800px;
-      margin: 40px auto;
-    }
   </style>
 </head>
 <body>
@@ -112,6 +108,9 @@
 
   <button class="repeat-btn" id="repeatBtn" onclick="incrementCounter()">Repeat Mantra</button>
   <button class="reset" onclick="resetCounter()">Reset</button>
+
+  <!-- View History Button -->
+  <button class="color-btn" onclick="window.location.href='history.html'">View History</button>
 
   <div class="color-controls">
     <h3>Adjust Colors</h3>
@@ -191,7 +190,7 @@
     function updateColors() {
       document.body.style.backgroundColor = bgColor;
       document.getElementById("repeatBtn").style.backgroundColor = repeatColor;
-      document.getElementById("reset").style.backgroundColor = resetColor;
+      document.querySelector(".reset").style.backgroundColor = resetColor;
       localStorage.setItem("bgColor", bgColor);
       localStorage.setItem("repeatColor", repeatColor);
       localStorage.setItem("resetColor", resetColor);
@@ -227,6 +226,10 @@
     }
 
     updateDisplay();
+    if (godImageUrl) {
+      document.getElementById("godImage").src = godImageUrl;
+      document.getElementById("godImage").style.display = "block";
+    }
   </script>
 </body>
 </html>
