@@ -57,7 +57,7 @@
       font-size: 30px;
       padding: 30px 50px;
       min-width: 250px;
-      margin: 20px;
+      margin: 20px 0;
     }
     button:hover {
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
@@ -68,8 +68,9 @@
     }
     .controls {
       display: flex;
+      flex-direction: column;
       justify-content: center;
-      flex-wrap: wrap;
+      align-items: center;
       gap: 12px;
     }
     .filter-section {
@@ -105,7 +106,6 @@
     <button id="repeatBtn" onclick="repeatMantra()">Repeat</button>
     <button onclick="resetCount()">Reset</button>
     <button onclick="viewHistory()">History</button>
-    <button onclick="syncToCloud()">Sync</button>
   </div>
 
   <div class="filter-section">
@@ -198,6 +198,25 @@
       }
     }
 
-    function syncToCloud() {
-      alert("Cloud sync feature coming soon!");
+    document.getElementById("godImageInput").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          document.getElementById("godImage").src = reader.result;
+          currentMantraImg = reader.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Remove God Image Function
+    function removeGodImage() {
+      document.getElementById("godImage").src = "";
+      currentMantraImg = "";
     }
+
+    loadTheme();
+  </script>
+</body>
+</html>
