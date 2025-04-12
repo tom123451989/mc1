@@ -95,6 +95,7 @@
     <input type="file" id="godImageInput" accept="image/*">
     <div><img id="godImage" class="god-img" alt="" /></div>
     <button onclick="setMantra()">Set Mantra</button>
+    <button onclick="removeGodImage()">Remove God Picture</button>
   </div>
 
   <div id="currentMantra" style="font-size: 24px; margin: 10px 0;"></div>
@@ -200,20 +201,3 @@
     function syncToCloud() {
       alert("Cloud sync feature coming soon!");
     }
-
-    document.getElementById("godImageInput").addEventListener("change", function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          document.getElementById("godImage").src = reader.result;
-          currentMantraImg = reader.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    loadTheme();
-  </script>
-</body>
-</html>
