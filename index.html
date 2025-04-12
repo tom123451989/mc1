@@ -59,6 +59,10 @@
       min-width: 250px;
       margin: 20px 0;
     }
+    #repeatBtn {
+      font-size: 90px;
+      padding: 90px 150px;
+    }
     button:hover {
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
@@ -97,6 +101,15 @@
     <div><img id="godImage" class="god-img" alt="" /></div>
     <button onclick="setMantra()">Set Mantra</button>
     <button onclick="removeGodImage()">Remove God Picture</button>
+  </div>
+
+  <!-- Load Mantra from History -->
+  <div>
+    <label for="historySelect">Or Load From History:</label><br>
+    <select id="historySelect">
+      <option value="">-- Select Mantra --</option>
+    </select>
+    <button onclick="loadSelectedMantra()">Load Selected Mantra</button>
   </div>
 
   <div id="currentMantra" style="font-size: 24px; margin: 10px 0;"></div>
@@ -160,6 +173,7 @@
       if (!history.find(m => m.text === text)) {
         history.push({ text, count: 0 });
         localStorage.setItem("mantraHistory", JSON.stringify(history));
+        populateHistoryDropdown();
       }
     }
 
@@ -198,6 +212,30 @@
       }
     }
 
+    function populateHistoryDropdown() {
+      const select = document.getElementById("historySelect");
+      select.innerHTML = '<option value="">-- Select Mantra --</option>';
+      const history = JSON.parse(localStorage.getItem("mantraHistory") || "[]");
+      history.forEach(m => {
+        const option = document.createElement("option");
+        option.value = m.text;
+        option.textContent = `${m.text} (${m.count})`;
+        select.appendChild(option);
+      });
+    }
+
+    function loadSelectedMantra() {
+      const selected = document.getElementById("historySelect").value;
+      if (selected) {
+        currentMantra = selected;
+        const history = JSON.parse(localStorage.getItem("mantraHistory") || "[]");
+        const mantra = history.find(m => m.text === selected);
+        count = mantra?.count || 0;
+        document.getElementById("countDisplay").textContent = count;
+        document.getElementById("currentMantra").textContent = `Current: "${currentMantra}"`;
+      }
+    }
+
     document.getElementById("godImageInput").addEventListener("change", function(e) {
       const file = e.target.files[0];
       if (file) {
@@ -210,13 +248,15 @@
       }
     });
 
-    // Remove God Image Function
     function removeGodImage() {
       document.getElementById("godImage").src = "";
       currentMantraImg = "";
     }
 
-    loadTheme();
+    window.onload = function () {
+      loadTheme();
+      populateHistoryDropdown();
+    };
   </script>
 </body>
 </html>
