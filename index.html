@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Mantra History</title>
+  <title>Mantra Repetition Counter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -12,28 +12,83 @@
       padding: 30px;
       margin: 0;
     }
-    .history-list {
-      list-style: none;
-      padding: 0;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .history-list li {
-      padding: 10px;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      margin: 5px 0;
-      cursor: pointer;
-    }
-    .back-button {
+    input, button, select {
       padding: 12px;
-      margin: 20px;
-      background-color: #8b0000;
-      color: white;
-      border-radius: 8px;
-      border: none;
+      margin: 8px;
       font-size: 16px;
+      width: 90%;
+      max-width: 300px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .mantra-display {
+      font-size: 22px;
+      margin-top: 20px;
+    }
+    .counter {
+      font-size: 48px;
+      margin: 20px 0;
+      color: #8b0000;
+    }
+    .repeat-btn, .reset {
+      width: 450px;
+      height: 150px;
+      font-size: 24px;
+      margin: 20px auto;
+      border-radius: 16px;
+      display: block;
+    }
+    .repeat-btn {
+      background-color: #d4af37;
+      color: white;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    .repeat-btn:hover {
+      background-color: #c98d00;
+    }
+    .reset {
+      background-color: #ccc;
+      color: #333;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    .reset:hover {
+      background-color: #b0b0b0;
+    }
+    .glow {
+      box-shadow: 0 0 30px 10px #ffcc00;
+    }
+    #godImage {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      margin-top: 20px;
+      display: none;
+    }
+    .color-controls {
+      margin-top: 40px;
+      text-align: center;
+    }
+    .color-btn {
+      padding: 14px;
+      margin: 10px;
+      font-size: 16px;
+      background: linear-gradient(to right, #ff7e5f, #feb47b);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 200px;
+      transition: transform 0.3s, background-color 0.3s;
+    }
+    .color-btn:hover {
+      transform: scale(1.1);
+      background-color: #ff7e5f;
+    }
+    .color-btn:focus {
+      outline: none;
+      box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.5);
     }
     #chartContainer {
       max-width: 800px;
@@ -42,64 +97,136 @@
   </style>
 </head>
 <body>
-  <h1>Mantra History</h1>
-  <ul class="history-list" id="historyList"></ul>
-  <canvas id="myChart" width="400" height="200"></canvas>
-  <button class="back-button" onclick="window.history.back()">Back to Home</button>
+  <h1>Mantra Repetition Counter</h1>
+
+  <input type="file" id="uploadImage" accept="image/*" onchange="uploadImage()" />
+  <div>
+    <img id="godImage" src="" alt="God's Image" />
+  </div>
+
+  <input id="mantraInput" type="text" placeholder="Enter your mantra" />
+  <button onclick="setMantra()">Set Mantra</button>
+
+  <div class="mantra-display" id="mantraDisplay"></div>
+  <div class="counter" id="counterDisplay">0</div>
+
+  <button class="repeat-btn" id="repeatBtn" onclick="incrementCounter()">Repeat Mantra</button>
+  <button class="reset" onclick="resetCounter()">Reset</button>
+
+  <div class="color-controls">
+    <h3>Adjust Colors</h3>
+    <button class="color-btn" onclick="changeBackgroundColor()">Change Background Color</button>
+    <button class="color-btn" onclick="changeRepeatButtonColor()">Change Repeat Button Color</button>
+    <button class="color-btn" onclick="changeResetButtonColor()">Change Reset Button Color</button>
+  </div>
+
+  <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
 
   <script>
-    function renderHistory() {
-      const list = document.getElementById("historyList");
-      list.innerHTML = "";
-      const history = JSON.parse(localStorage.getItem("mantraHistory") || "[]");
-      history.forEach(item => {
-        const li = document.createElement("li");
-        li.textContent = `"${item.text}" — Count: ${item.count}`;
-        li.onclick = function() {
-          renderGraph(item.text);
-        };
-        list.appendChild(li);
-      });
+    let mantra = localStorage.getItem("mantra") || "";
+    let count = parseInt(localStorage.getItem("count") || "0");
+    let godImageUrl = localStorage.getItem("godImageUrl") || "";
+    let bgColor = localStorage.getItem("bgColor") || "#f9f5f0";
+    let repeatColor = localStorage.getItem("repeatColor") || "#d4af37";
+    let resetColor = localStorage.getItem("resetColor") || "#ccc";
+
+    function setMantra() {
+      mantra = document.getElementById("mantraInput").value.trim();
+      if (!mantra) return;
+      count = 0;
+      localStorage.setItem("mantra", mantra);
+      localStorage.setItem("count", count);
+      saveToHistory(mantra, count);
+      updateDisplay();
     }
 
-    function renderGraph(mantra) {
-      const ctx = document.getElementById('myChart').getContext('2d');
+    function incrementCounter() {
+      if (!mantra) {
+        alert("Please enter a mantra first.");
+        return;
+      }
+      count++;
+      localStorage.setItem("count", count);
+      updateDailyCount();
+      updateDisplay();
+
+      document.getElementById("clickSound").play();
+      if (navigator.vibrate) navigator.vibrate(100);
+
+      const btn = document.getElementById("repeatBtn");
+      btn.classList.add("glow");
+      setTimeout(() => btn.classList.remove("glow"), 200);
+    }
+
+    function resetCounter() {
+      count = 0;
+      localStorage.setItem("count", count);
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      document.getElementById("mantraDisplay").textContent = mantra ? `Mantra: "${mantra}"` : "";
+      document.getElementById("counterDisplay").textContent = count;
+      document.getElementById("mantraInput").value = mantra;
+      updateColors();
+    }
+
+    function saveToHistory(mantra, count) {
+      let history = JSON.parse(localStorage.getItem("mantraHistory") || "[]");
+      if (!history.find(h => h.text === mantra)) {
+        history.unshift({ text: mantra, count });
+        if (history.length > 20) history.pop();
+        localStorage.setItem("mantraHistory", JSON.stringify(history));
+      }
+    }
+
+    function updateDailyCount() {
       const key = "mantraDailyCounts_" + mantra;
-      const dailyData = JSON.parse(localStorage.getItem(key) || "{}");
-      const dates = Object.keys(dailyData);
-      const counts = Object.values(dailyData);
-
-      const chartData = {
-        labels: dates,
-        datasets: [{
-          label: mantra + " Daily Count",
-          data: counts,
-          borderColor: '#d4af37',
-          fill: false,
-        }]
-      };
-
-      const chartOptions = {
-        responsive: true,
-        scales: {
-          x: {
-            type: 'category',
-            labels: dates,
-          },
-          y: {
-            beginAtZero: true,
-          }
-        }
-      };
-
-      new Chart(ctx, {
-        type: 'line',
-        data: chartData,
-        options: chartOptions,
-      });
+      const today = new Date().toISOString().slice(0, 10);
+      let data = JSON.parse(localStorage.getItem(key) || "{}");
+      data[today] = (data[today] || 0) + 1;
+      localStorage.setItem(key, JSON.stringify(data));
     }
 
-    renderHistory();
+    function updateColors() {
+      document.body.style.backgroundColor = bgColor;
+      document.getElementById("repeatBtn").style.backgroundColor = repeatColor;
+      document.getElementById("reset").style.backgroundColor = resetColor;
+      localStorage.setItem("bgColor", bgColor);
+      localStorage.setItem("repeatColor", repeatColor);
+      localStorage.setItem("resetColor", resetColor);
+    }
+
+    function uploadImage() {
+      const file = document.getElementById("uploadImage").files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          godImageUrl = e.target.result;
+          document.getElementById("godImage").src = godImageUrl;
+          document.getElementById("godImage").style.display = "block";
+          localStorage.setItem("godImageUrl", godImageUrl);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function changeBackgroundColor() {
+      bgColor = prompt("Enter a hex color for the background:", bgColor) || bgColor;
+      updateColors();
+    }
+
+    function changeRepeatButtonColor() {
+      repeatColor = prompt("Enter a hex color for the Repeat Button:", repeatColor) || repeatColor;
+      updateColors();
+    }
+
+    function changeResetButtonColor() {
+      resetColor = prompt("Enter a hex color for the Reset Button:", resetColor) || resetColor;
+      updateColors();
+    }
+
+    updateDisplay();
   </script>
 </body>
 </html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mantra History</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 30px;
+      margin: 0;
+    }
+    .history-list {
+      list-style: none;
+      padding: 0;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .history-list li {
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin: 5px 0;
+      cursor: pointer;
+    }
+    .back-button {
+      padding: 12px;
+      margin: 20px;
+      background-color: #8b0000;
+      color: white;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+    #chartContainer {
+      max-width: 800px;
+      margin: 40px auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mantra History</h1>
+  <ul class="history-list" id="historyList"></ul>
+  <canvas id="myChart" width="400" height="200"></canvas>
+  <button class="back-button" onclick="window.history.back()">Back to Home</button>
+
+  <script>
+    function renderHistory() {
+      const list = document.getElementById("historyList");
+      list.innerHTML = "";
+      const history = JSON.parse(localStorage.getItem("mantraHistory") || "[]");
+      history.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `"${item.text}" — Count: ${item.count}`;
+        li.onclick = function() {
+          renderGraph(item.text);
+        };
+        list.appendChild(li);
+      });
+    }
+
+    function renderGraph(mantra) {
+      const ctx = document.getElementById('myChart').getContext('2d');
+      const key = "mantraDailyCounts_" + mantra;
+      const dailyData = JSON.parse(localStorage.getItem(key) || "{}");
+      const dates = Object.keys(dailyData);
+      const counts = Object.values(dailyData);
+
+      const chartData = {
+        labels: dates,
+        datasets: [{
+          label: mantra + " Daily Count",
+          data: counts,
+          borderColor: '#d4af37',
+          fill: false,
+        }]
+      };
+
+      const chartOptions = {
+        responsive: true,
+        scales: {
+          x: {
+            type: 'category',
+            labels: dates,
+          },
+          y: {
+            beginAtZero: true,
+          }
+        }
+      };
+
+      new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: chartOptions,
+      });
+    }
+
+    renderHistory();
+  </script>
+</body>
+</html>
