@@ -1,235 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Mantra Repetition Counter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    :root {
+      --bg: #fdfaf6;
+      --text: #333;
+      --primary: #ff9800;
+      --accent: #fff3e0;
+    }
+    body.dark {
+      --bg: #1e1e1e;
+      --text: #eee;
+      --primary: #90caf9;
+      --accent: #2c2c2c;
+    }
+    body.sattvic {
+      --bg: #fff7e6;
+      --text: #5c3c00;
+      --primary: #fbc02d;
+      --accent: #fffde7;
+    }
+
     body {
+      background: var(--bg);
+      color: var(--text);
       font-family: 'Segoe UI', sans-serif;
-      text-align: center;
-      padding: 30px;
       margin: 0;
+      padding: 20px;
+      text-align: center;
+      transition: background 0.3s, color 0.3s;
+    }
+    h1 {
+      color: var(--primary);
     }
     input, button, select {
-      padding: 12px;
-      margin: 8px;
-      font-size: 16px;
-      width: 90%;
-      max-width: 300px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      font-size: 18px;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      transition: box-shadow 0.3s;
     }
-    .mantra-display {
-      font-size: 22px;
-      margin-top: 20px;
+    input {
+      width: 80%;
+      max-width: 400px;
+      background: var(--accent);
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
     .counter {
       font-size: 48px;
       margin: 20px 0;
-      color: #8b0000;
     }
-    .repeat-btn, .reset {
-      width: 450px;
-      height: 150px;
-      font-size: 24px;
-      margin: 20px auto;
-      border-radius: 16px;
-      display: block;
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
-    .repeat-btn {
-      background-color: #d4af37;
-      color: white;
-      border: none;
-      transition: background-color 0.3s ease;
+    .filter-section {
+      margin: 20px 0;
     }
-    .repeat-btn:hover {
-      background-color: #c98d00;
-    }
-    .reset {
-      background-color: #ccc;
-      color: #333;
-      border: none;
-      transition: background-color 0.3s ease;
-    }
-    .reset:hover {
-      background-color: #b0b0b0;
-    }
-    .glow {
-      box-shadow: 0 0 30px 10px #ffcc00;
-    }
-    #godImage {
-      width: 200px;
-      height: 200px;
-      object-fit: cover;
+    .theme-toggle {
       margin-top: 20px;
-      display: none;
     }
-    .color-controls {
-      margin-top: 40px;
-      text-align: center;
+    .mantra-entry {
+      margin-top: 20px;
     }
-    .color-btn {
-      padding: 14px;
-      margin: 10px;
-      font-size: 16px;
-      background: linear-gradient(to right, #ff7e5f, #feb47b);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      width: 200px;
-      transition: transform 0.3s, background-color 0.3s;
-    }
-    .color-btn:hover {
-      transform: scale(1.1);
-      background-color: #ff7e5f;
-    }
-    .color-btn:focus {
-      outline: none;
-      box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.5);
+    img.god-img {
+      max-height: 100px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>Mantra Repetition Counter</h1>
+  <h1>Mantra Counter</h1>
 
-  <input type="file" id="uploadImage" accept="image/*" onchange="uploadImage()" />
-  <div>
-    <img id="godImage" src="" alt="God's Image" />
+  <div class="mantra-entry">
+    <input type="text" id="mantraInput" placeholder="Enter Mantra">
+    <input type="file" id="godImageInput" accept="image/*">
+    <div><img id="godImage" class="god-img" alt="" /></div>
+    <button onclick="setMantra()">Set Mantra</button>
   </div>
 
-  <input id="mantraInput" type="text" placeholder="Enter your mantra" />
-  <button onclick="setMantra()">Set Mantra</button>
-
-  <div class="mantra-display" id="mantraDisplay"></div>
-  <div class="counter" id="counterDisplay">0</div>
-
-  <button class="repeat-btn" id="repeatBtn" onclick="incrementCounter()">Repeat Mantra</button>
-  <button class="reset" onclick="resetCounter()">Reset</button>
-
-  <!-- View History Button -->
-  <button class="color-btn" onclick="window.location.href='history.html'">View History</button>
-
-  <div class="color-controls">
-    <h3>Adjust Colors</h3>
-    <button class="color-btn" onclick="changeBackgroundColor()">Change Background Color</button>
-    <button class="color-btn" onclick="changeRepeatButtonColor()">Change Repeat Button Color</button>
-    <button class="color-btn" onclick="changeResetButtonColor()">Change Reset Button Color</button>
+  <div class="filter-section">
+    <input type="text" id="searchInput" placeholder="Search mantras...">
+    <br>
+    <label>From: <input type="date" id="fromDate"></label>
+    <label>To: <input type="date" id="toDate"></label>
   </div>
 
-  <audio id="clickSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
+  <div id="currentMantra" style="font-size: 24px; margin: 10px 0;"></div>
+  <div class="counter" id="countDisplay">0</div>
+
+  <div class="controls">
+    <button id="repeatBtn" onclick="repeatMantra()">Repeat</button>
+    <button onclick="resetCount()">Reset</button>
+    <button onclick="viewHistory()">History</button>
+    <button onclick="syncToCloud()">Sync</button>
+  </div>
+
+  <div class="theme-toggle">
+    <label>Theme:
+      <select id="themeSelect" onchange="setTheme(this.value)">
+        <option value="default">Light</option>
+        <option value="dark">Dark</option>
+        <option value="sattvic">Sattvic</option>
+      </select>
+    </label>
+  </div>
 
   <script>
-    let mantra = localStorage.getItem("mantra") || "";
-    let count = parseInt(localStorage.getItem("count") || "0");
-    let godImageUrl = localStorage.getItem("godImageUrl") || "";
-    let bgColor = localStorage.getItem("bgColor") || "#f9f5f0";
-    let repeatColor = localStorage.getItem("repeatColor") || "#d4af37";
-    let resetColor = localStorage.getItem("resetColor") || "#ccc";
+    let count = 0;
+    let currentMantra = "";
+    let currentMantraImg = "";
 
     function setMantra() {
-      mantra = document.getElementById("mantraInput").value.trim();
-      if (!mantra) return;
-      count = 0;
-      localStorage.setItem("mantra", mantra);
-      localStorage.setItem("count", count);
-      saveToHistory(mantra, count);
-      updateDisplay();
-    }
-
-    function incrementCounter() {
-      if (!mantra) {
-        alert("Please enter a mantra first.");
-        return;
+      const input = document.getElementById("mantraInput").value.trim();
+      if (input) {
+        currentMantra = input;
+        count = 0;
+        document.getElementById("countDisplay").textContent = count;
+        document.getElementById("currentMantra").textContent = `Current: "${input}"`;
+        storeMantra(input);
       }
+    }
+
+    function repeatMantra() {
+      if (!currentMantra) return;
       count++;
-      localStorage.setItem("count", count);
-      updateDailyCount();
-      updateDisplay();
-
-      document.getElementById("clickSound").play();
-      if (navigator.vibrate) navigator.vibrate(100);
-
-      const btn = document.getElementById("repeatBtn");
-      btn.classList.add("glow");
-      setTimeout(() => btn.classList.remove("glow"), 200);
+      document.getElementById("countDisplay").textContent = count;
+      storeCount(currentMantra, count);
+      storeDailyCount(currentMantra);
+      if (navigator.vibrate) navigator.vibrate(50);
     }
 
-    function resetCounter() {
+    function resetCount() {
       count = 0;
-      localStorage.setItem("count", count);
-      updateDisplay();
+      document.getElementById("countDisplay").textContent = count;
     }
 
-    function updateDisplay() {
-      document.getElementById("mantraDisplay").textContent = mantra ? `Mantra: "${mantra}"` : "";
-      document.getElementById("counterDisplay").textContent = count;
-      document.getElementById("mantraInput").value = mantra;
-      updateColors();
-    }
-
-    function saveToHistory(mantra, count) {
+    function storeMantra(text) {
       let history = JSON.parse(localStorage.getItem("mantraHistory") || "[]");
-      if (!history.find(h => h.text === mantra)) {
-        history.unshift({ text: mantra, count });
-        if (history.length > 20) history.pop();
+      if (!history.find(m => m.text === text)) {
+        history.push({ text, count: 0 });
         localStorage.setItem("mantraHistory", JSON.stringify(history));
       }
     }
 
-    function updateDailyCount() {
-      const key = "mantraDailyCounts_" + mantra;
-      const today = new Date().toISOString().slice(0, 10);
+    function storeCount(text, count) {
+      let history = JSON.parse(localStorage.getItem("mantraHistory") || "[]");
+      let mantra = history.find(m => m.text === text);
+      if (mantra) {
+        mantra.count = count;
+        localStorage.setItem("mantraHistory", JSON.stringify(history));
+      }
+    }
+
+    function storeDailyCount(text) {
+      const today = new Date().toISOString().split("T")[0];
+      const key = "mantraDailyCounts_" + text;
       let data = JSON.parse(localStorage.getItem(key) || "{}");
       data[today] = (data[today] || 0) + 1;
       localStorage.setItem(key, JSON.stringify(data));
     }
 
-    function updateColors() {
-      document.body.style.backgroundColor = bgColor;
-      document.getElementById("repeatBtn").style.backgroundColor = repeatColor;
-      document.querySelector(".reset").style.backgroundColor = resetColor;
-      localStorage.setItem("bgColor", bgColor);
-      localStorage.setItem("repeatColor", repeatColor);
-      localStorage.setItem("resetColor", resetColor);
+    function viewHistory() {
+      window.location.href = "history.html";
     }
 
-    function uploadImage() {
-      const file = document.getElementById("uploadImage").files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          godImageUrl = e.target.result;
-          document.getElementById("godImage").src = godImageUrl;
-          document.getElementById("godImage").style.display = "block";
-          localStorage.setItem("godImageUrl", godImageUrl);
-        };
-        reader.readAsDataURL(file);
+    function setTheme(theme) {
+      document.body.classList.remove("dark", "sattvic");
+      if (theme !== "default") document.body.classList.add(theme);
+      localStorage.setItem("theme", theme);
+    }
+
+    function loadTheme() {
+      const saved = localStorage.getItem("theme");
+      if (saved) {
+        document.getElementById("themeSelect").value = saved;
+        setTheme(saved);
       }
     }
 
-    function changeBackgroundColor() {
-      bgColor = prompt("Enter a hex color for the background:", bgColor) || bgColor;
-      updateColors();
+    function syncToCloud() {
+      alert("Cloud sync feature coming soon!");
     }
 
-    function changeRepeatButtonColor() {
-      repeatColor = prompt("Enter a hex color for the Repeat Button:", repeatColor) || repeatColor;
-      updateColors();
-    }
+    document.getElementById("godImageInput").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          document.getElementById("godImage").src = reader.result;
+          currentMantraImg = reader.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
 
-    function changeResetButtonColor() {
-      resetColor = prompt("Enter a hex color for the Reset Button:", resetColor) || resetColor;
-      updateColors();
-    }
-
-    updateDisplay();
-    if (godImageUrl) {
-      document.getElementById("godImage").src = godImageUrl;
-      document.getElementById("godImage").style.display = "block";
-    }
+    loadTheme();
   </script>
 </body>
 </html>
