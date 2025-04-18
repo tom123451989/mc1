@@ -116,6 +116,10 @@
   <div class="counter" id="countDisplay">0</div>
 
   <div class="controls">
+    <div>
+      <label for="repetitionCount">Repetitions per Press:</label><br>
+      <input type="number" id="repetitionCount" min="1" value="1" style="width: 100px; text-align: center;">
+    </div>
     <button id="repeatBtn" onclick="repeatMantra()">Repeat</button>
     <button onclick="resetCount()">Reset</button>
     <button onclick="viewHistory()">History</button>
@@ -156,10 +160,18 @@
 
     function repeatMantra() {
       if (!currentMantra) return;
-      count++;
+      const repeatCount = parseInt(document.getElementById("repetitionCount").value) || 1;
+      count += repeatCount;
       document.getElementById("countDisplay").textContent = count;
       storeCount(currentMantra, count);
-      storeDailyCount(currentMantra);
+
+      // Update daily count
+      const today = new Date().toISOString().split("T")[0];
+      const key = "mantraDailyCounts_" + currentMantra;
+      let data = JSON.parse(localStorage.getItem(key) || "{}");
+      data[today] = (data[today] || 0) + repeatCount;
+      localStorage.setItem(key, JSON.stringify(data));
+
       if (navigator.vibrate) navigator.vibrate(50);
     }
 
